@@ -27,6 +27,9 @@
 #include "console/console.h"
 #include "services/gap/ble_svc_gap.h"
 #include "bleprph.h"
+/* Custom_Headers */
+#include "crc8.h"
+
 
 #if CONFIG_EXAMPLE_EXTENDED_ADV
 static uint8_t ext_adv_pattern_1[] = {
@@ -558,6 +561,14 @@ void
 app_main(void)
 {
     int rc;
+    static const uint8_t test[] = "123456789";
+    uint8_t crc = crc8(test, sizeof(test)-1);
+    if (crc == 0xF4){
+        ESP_LOGI(tag, "PASS: 0x%02X", crc);
+    } else {
+        ESP_LOGE(tag, "FAIL: expected 0xF4, GOT: 0x%02X", crc);
+    }
+
 
     /* Initialize NVS — it is used to store PHY calibration data */
     esp_err_t ret = nvs_flash_init();
