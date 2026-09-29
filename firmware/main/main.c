@@ -29,6 +29,7 @@
 #include "bleprph.h"
 /* Custom_Headers */
 #include "crc8.h"
+#include "uart_proto.h"
 
 
 #if CONFIG_EXAMPLE_EXTENDED_ADV
@@ -561,6 +562,7 @@ void
 app_main(void)
 {
     int rc;
+
     static const uint8_t test[] = "123456789";
     uint8_t crc = crc8(test, sizeof(test)-1);
     if (crc == 0xF4){
@@ -631,6 +633,8 @@ app_main(void)
 
     /* XXX Need to have template for store */
     ble_store_config_init();
+
+    uart_proto_init();
 
     nimble_port_freertos_init(bleprph_host_task);
 

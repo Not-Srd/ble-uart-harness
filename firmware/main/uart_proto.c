@@ -148,8 +148,12 @@ static void uart_rx_task(void *arg) {
         send_frame(REP_NACK, temp, sizeof(temp));
         current_state = HUNT_SOF;
       }
-      
+
     }
   }
+}
 
+void uart_proto_init() {
+  ESP_ERROR_CHECK(uart_driver_install(UART_NUM_0, 256, 0, 0, NULL, 0));
+  xTaskCreate(uart_rx_task, "uart_rx", 4096, NULL, 5, NULL);
 }
