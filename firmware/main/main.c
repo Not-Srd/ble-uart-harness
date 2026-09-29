@@ -589,7 +589,7 @@ app_main(void)
     ble_hs_cfg.gatts_register_cb = gatt_svr_register_cb;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
-    ble_hs_cfg.sm_io_cap = CONFIG_EXAMPLE_IO_TYPE;
+    ble_hs_cfg.sm_io_cap = BLE_HS_IO_NO_INPUT_OUTPUT;
 #ifdef CONFIG_EXAMPLE_BONDING
     ble_hs_cfg.sm_bonding = 1;
     /* Enable the appropriate bit masks to make sure the keys
@@ -635,10 +635,10 @@ app_main(void)
     nimble_port_freertos_init(bleprph_host_task);
 
     /* Initialize command line interface to accept input from user */
-    rc = scli_init();
+    /*rc = scli_init();
     if (rc != ESP_OK) {
         ESP_LOGE(tag, "scli_init() failed");
-    }
+    }*/
 
 #if MYNEWT_VAL(BLE_EATT_CHAN_NUM) > 0
     bearers = 0;
