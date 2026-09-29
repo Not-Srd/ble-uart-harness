@@ -26,12 +26,12 @@
 
 
 /*ERROR CODES*/
-#define ERR_BAD_CRC 0x01
-#define ERR_BAD_LEN 0x02
-#define ERR_UNKNOWN_CMD 0x03
-#define ERR_BAD_STATE 0x04
-#define ERR_BAD_PARAM 0x05
-#define ERR_TIMEOUT 0x06
+#define ERR_BAD_CRC 0x41
+#define ERR_BAD_LEN 0x42
+#define ERR_UNKNOWN_CMD 0x43
+#define ERR_BAD_STATE 0x44
+#define ERR_BAD_PARAM 0x45
+#define ERR_TIMEOUT 0x46
 
 /*Parsing States*/
 typedef enum {
