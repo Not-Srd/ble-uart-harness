@@ -30,6 +30,7 @@
 /* Custom_Headers */
 #include "crc8.h"
 #include "uart_proto.h"
+#include "harness_link.h"
 
 
 #if CONFIG_EXAMPLE_EXTENDED_ADV
@@ -53,6 +54,8 @@ static uint8_t own_addr_type;
 static uint16_t cids[MYNEWT_VAL(BLE_EATT_CHAN_NUM)];
 static uint16_t bearers;
 #endif
+/* Handle of the current connection, or NONE when nothing is connected. */
+static uint16_t current_conn = BLE_HS_CONN_HANDLE_NONE;
 
 void ble_store_config_init(void);
 
@@ -263,6 +266,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
             rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
             assert(rc == 0);
             bleprph_print_conn_desc(&desc);
+            current_conn = event->connect.conn_handle;
         }
         MODLOG_DFLT(INFO, "\n");
 
@@ -283,6 +287,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
     case BLE_GAP_EVENT_DISCONNECT:
         MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
         bleprph_print_conn_desc(&event->disconnect.conn);
+        current_conn = BLE_HS_CONN_HANDLE_NONE;
         MODLOG_DFLT(INFO, "\n");
 
         /* Connection terminated; resume advertising. */
@@ -483,6 +488,38 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 #endif
     }
     return 0;
+}
+
+/* ---------- Harness link control (called from uart_proto.c) ---------- */
+
+int harness_start_adv(void)
+{
+    if (current_conn != BLE_HS_CONN_HANDLE_NONE || ble_gap_adv_active()) {
+        return HARNESS_BAD_STATE;
+    }
+    bleprph_advertise();
+    return ble_gap_adv_active() ? HARNESS_OK : HARNESS_FAILED;
+}
+
+int harness_stop_adv(void)
+{
+    if (!ble_gap_adv_active()) {
+        return HARNESS_BAD_STATE;
+    }
+    return ble_gap_adv_stop() == 0 ? HARNESS_OK : HARNESS_FAILED;
+}
+
+int harness_disconnect(void)
+{
+    uint16_t conn = current_conn;
+    if (conn == BLE_HS_CONN_HANDLE_NONE) {
+        return HARNESS_BAD_STATE;
+    }
+    int rc = ble_gap_terminate(conn, BLE_ERR_REM_USER_CONN_TERM);
+    if (rc == BLE_HS_ENOTCONN) {
+        return HARNESS_BAD_STATE;   /* link dropped between our check and the call */
+    }
+    return rc == 0 ? HARNESS_OK : HARNESS_FAILED;
 }
 
 static void
